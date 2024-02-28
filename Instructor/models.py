@@ -68,4 +68,22 @@ class Leacture(models.Model):
         super(Leacture, self).save(*args, **kwargs)
     
     
+
+
+class RatingCourse(models.Model):
+    id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name = "rating")
+    rating = models.SmallIntegerField()
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name = "courses_rated")
+    
+    class Meta:
+        # unique_together = ("id", 'user.id')
+        unique_together = ('course', 'user')
+        
+    
+
+    def __str__(self):
+        return f"{self.user.first_name} 'rated' {self.course.title} 'this course :'- {self.rating}"
+    
+    
     

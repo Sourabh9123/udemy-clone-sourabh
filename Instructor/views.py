@@ -2,9 +2,9 @@ from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.generics import  GenericAPIView
-from Instructor.models import Course, Category, Instructor, Leacture
+from Instructor.models import Course, Category, Instructor, Leacture, RatingCourse
 from Instructor.serializers import (CourseSerializer, CategorySerializer,InstructorSerializer, 
-                                    LeactureSerializer, 
+                                    LeactureSerializer, RatingCourseSerializer
                                     )
 from rest_framework.permissions import  IsAdminUser, IsAuthenticated
 from students.models import Learner
@@ -325,4 +325,44 @@ class enrollInCourse(GenericAPIView):
             # Handle other exceptions, e.g., database errors
             return Response('Something went wrong: {}'.format(str(e)), status=status.HTTP_500_INTERNAL_SERVER_ERROR)    
         
-         
+        
+        
+class RatingCourseView(GenericAPIView):
+    
+    serializer_class = RatingCourseSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def post(self, request, *args, **kwargs):
+        
+        data =  request.data
+        user =  request.user    
+        course_id = kwargs.get("course_id",None)
+        
+        if course_id:
+            course = Course.objects.filter(id=course_id).first()
+            if course:
+                
+                rating = data.get('rating')
+                rating = int(rating)
+                if rating >= 1 and rating <= 5:
+                    data_to_pass = {
+                                    "rating" : data.get("rating"),
+                                    "course" : course.id,
+                                    "user" :  user.id
+                                }
+                
+                
+                    serializer = RatingCourseSerializer(data=data_to_pass)
+                    if serializer.is_valid():
+                        serializer.save()
+                        return Response("Thank Your for Your feedback", status=status.HTTP_200_OK)
+                    else:
+                            
+                        return Response("You have already given feedback for this course or you can edit", status=status.HTTP_400_BAD_REQUEST) 
+                else:
+                    return Response("rating musting in range between 1 to 5", status=status.HTTP_400_BAD_REQUEST)
+                
+        return    Response("some thing went wrong", status=status.HTTP_404_NOT_FOUND) 
+                
+        
+        

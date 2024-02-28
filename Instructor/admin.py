@@ -1,5 +1,5 @@
 from django.contrib import admin
-from Instructor.models import Course, Instructor, Category,Leacture
+from Instructor.models import Course, Instructor, Category,Leacture , RatingCourse
 
 
 
@@ -33,3 +33,10 @@ class InstructorAdmin(admin.ModelAdmin):
 admin.site.register(Course,CourseAdmin)
 
 admin.site.register(Instructor,InstructorAdmin)
+
+
+class RatingCourseAdmin(admin.ModelAdmin):
+    list_display = ["id","user", "rating","course"]
+    
+    
+admin.site.register(RatingCourse, RatingCourseAdmin)
