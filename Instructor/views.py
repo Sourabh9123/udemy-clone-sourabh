@@ -15,7 +15,14 @@ from django.db.models import Q
 from django.db.models import Avg
 
 
+
+
 User = get_user_model()
+
+
+
+
+
 
 
 
@@ -127,6 +134,8 @@ class CourseDetailView(GenericAPIView):
         course_id = kwargs.get('course_id') 
         user = request.user
         data = request.data
+        
+        
         if user.role == "instructor":
             try:
                 course = Course.objects.get(id=course_id)
@@ -372,6 +381,9 @@ class RatingCourseView(GenericAPIView):
         user = request.user
         data['user'] = user.id
         data['course'] = course_id
+        
+        
+        
         if data.get("rating"):
             if data.get('rating') >= 1 and data.get('rating') <= 5:
                 
@@ -431,5 +443,8 @@ class mostRatedCourses(GenericAPIView):
         serializer = CourseSerializer(courses_with_avg_rating, many=True)
         
         return Response(serializer.data, status=status.HTTP_200_OK)
-    
-        
+
+
+
+
+

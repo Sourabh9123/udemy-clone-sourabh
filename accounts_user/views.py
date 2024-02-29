@@ -251,4 +251,5 @@ class TuitorSignUpView(generics.GenericAPIView):
             return Response({"user":serializer.data}, status=status.HTTP_200_OK)
         
         return Response({"error":serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-            
+        
+        
