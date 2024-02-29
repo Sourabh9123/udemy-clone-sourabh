@@ -12,7 +12,7 @@ from django.db import transaction
 from accounts_user.models import User
 from django.contrib.auth import get_user_model
 from django.db.models import Q
-
+from django.db.models import Avg
 
 
 User = get_user_model()
@@ -283,7 +283,7 @@ class AllCourses(GenericAPIView):
                     Q(tags__endswith=search_query)
                     
                     )
-                    
+        
         serializer = CourseSerializer(courses, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
@@ -363,6 +363,73 @@ class RatingCourseView(GenericAPIView):
                     return Response("rating musting in range between 1 to 5", status=status.HTTP_400_BAD_REQUEST)
                 
         return    Response("some thing went wrong", status=status.HTTP_404_NOT_FOUND) 
-                
+    
+    
+    def put(self, request, *args, **kwargs):
         
+        course_id = kwargs.get('course_id',None)
+        data = request.data
+        user = request.user
+        data['user'] = user.id
+        data['course'] = course_id
+        if data.get("rating"):
+            if data.get('rating') >= 1 and data.get('rating') <= 5:
+                
+                if course_id:
+                    instance = RatingCourse.objects.filter(course__id =  course_id , user__id = user.id).first()
+                    if instance:
+                        serializer = RatingCourseSerializer(instance, data=data)
+                        if serializer.is_valid():
+                            serializer.save()
+                            return Response(serializer.data, status=status.HTTP_201_CREATED)
+                    return Response("you haven't rated this course before so you can not edit ", status=status.HTTP_200_OK)
+            else:
+                return Response("rating musting in range between 1 to 5", status=status.HTTP_400_BAD_REQUEST) 
+
+        return Response("You haven't reviewd this course" , status=status.HTTP_400_BAD_REQUEST)
+        
+        Response("some thing went wrong", status=status.HTTP_404_NOT_FOUND)
+        
+        
+    
+    def delete(self, request, *args, **kwargs):
+        course_id = kwargs.get('course_id',None)
+        data = request.data
+        user = request.user
+        
+        instance = RatingCourse.objects.filter(course__id = course_id, user__id =user.id)
+        if instance:
+            instance.delete()
+            return Response("Successfully deleted your review " ,status=status.HTTP_204_NO_CONTENT)
+        return Response("you haven't revied this course " ,status=status.HTTP_404_NOT_FOUND)
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
+class mostRatedCourses(GenericAPIView):
+    serializer_class = CourseSerializer
+    
+    def get(self, request, *args, **kwargs):
+        courses_with_avg_rating = Course.objects.annotate(avg_rating=Avg('rating__rating')).order_by('-avg_rating')
+        
+        courses = Course.objects.all()
+        for course in courses:
+            print("titlle", course.title)
+            print(course.rating)
+        print(courses_with_avg_rating)
+        
+        
+        serializer = CourseSerializer(courses_with_avg_rating, many=True)
+        
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
         

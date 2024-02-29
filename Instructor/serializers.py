@@ -16,10 +16,12 @@ class LeactureSerializer(ModelSerializer):
 
 class CourseSerializer(ModelSerializer):
     leactures = LeactureSerializer(many=True, read_only=True)
+ 
     class Meta:
         model = Course
-        fields = ('title', 'id', 'leactures','instructor','price','category','description','learner','tags')
-        
+        fields = ('title', 'id', 'leactures','instructor','price','category','description','learner','tags',)
+    
+ 
         
 
 class InstructorSerializer(ModelSerializer):
