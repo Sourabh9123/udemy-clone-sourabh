@@ -4,7 +4,7 @@ version: '3'
 
 services:
   # web:
-  #   build: .
+  #   build: .      # it fill take default dockerfile and make image if your docker name is not same you have to mention it
   # we use build comand to build our won image
 
   #   command: python manage.py runserver 0.0.0.0:8000
