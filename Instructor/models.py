@@ -49,7 +49,7 @@ class Leacture(models.Model):
     title = models.CharField(max_length=200)
     order = models.PositiveIntegerField(unique=True, blank=True, null=True)
     
-    content = models.FileField(upload_to=None, max_length=100, null=True, blank=True)
+    content = models.FileField(upload_to="leacture/videos", max_length=100, null=True, blank=True)
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='leactures')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -59,13 +59,13 @@ class Leacture(models.Model):
         
     
     
-    def save(self, *args, **kwargs):
-        if not self.order:
-            # Set the order field to the next available integer
-            last_instance = Leacture.objects.order_by('-order').first()
-            self.order = 1 if not last_instance else last_instance.order + 1
+    # def save(self, *args, **kwargs):
+    #     if not self.order:
+    #         # Set the order field to the next available integer
+    #         last_instance = Leacture.objects.order_by('-order').first()
+    #         self.order = 1 if not last_instance else last_instance.order + 1
 
-        super(Leacture, self).save(*args, **kwargs)
+    #     super(Leacture, self).save(*args, **kwargs)
     
     
 

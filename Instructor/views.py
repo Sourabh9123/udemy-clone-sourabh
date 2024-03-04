@@ -31,6 +31,7 @@ class CourseCreateView(GenericAPIView):
     
     serializer_class = CourseSerializer
     permission_classes = [IsAuthenticated]
+    # queryset = Course.objects.all()
     
     def post(self, request, *args, **kwargs):
         
@@ -142,13 +143,15 @@ class CourseDetailView(GenericAPIView):
                
                 instructor_obj = Instructor.objects.filter(user=user).first()
                 data['instructor'] = instructor_obj.id
-             
-                serializer = CourseSerializer(instance=course,data=data)
-                if serializer.is_valid():
-                    serializer.save()
-                    return Response(serializer.data, status=status.HTTP_200_OK)
+               
+                if course.instructor.user.id == user.id:
+                    serializer = CourseSerializer(instance=course,data=data)
+                    if serializer.is_valid():
+                        serializer.save()
+                       
+                        return Response(serializer.data, status=status.HTTP_200_OK)
                 else:
-                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                    return Response("You are not owner", status=status.HTTP_400_BAD_REQUEST)
             except Course.DoesNotExist:
                 return Response('No course ', status=status.HTTP_404_NOT_FOUND)
         
@@ -200,18 +203,24 @@ class LectureDetailView(GenericAPIView):
         
         try:
             leacture = Leacture.objects.get(id=leacture_id)
-            if leacture.course__instructor__user == user:
-                print('yes im the owner of this course', leacture)
+            if leacture.course.instructor.user == user: # here i made change
+                serializer = LeactureSerializer(instance=leacture, data=data)
+                if serializer.is_valid():
+                    serializer.save()
+                    return Response(serializer.data, status=status.HTTP_200_OK)
+            else:
+                return Response("you are not owner of this course", status=status.HTTP_404_NOT_FOUND)
+                
+               
         except Leacture.DoesNotExist:
             return Response("no leacture" , status=status.HTTP_404_NOT_FOUND)
         
-        serializer = LeactureSerializer(instance=leacture, data=data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
+        # serializer = LeactureSerializer(instance=leacture, data=data)
+        # if serializer.is_valid():
+        #     serializer.save()
+        #     return Response(serializer.data, status=status.HTTP_200_OK)
         
-        return Response(serializer.data, status=status.HTTP_404_NOT_FOUND)
-    
+        # return Response(serializer.data, status=status.HTTP_404_NOT_FOUND)
     
     # def delete(self, request, *args, **kwargs):
     #     leacture_id = kwargs.get('leacture_id')
@@ -232,15 +241,20 @@ class LectureView(GenericAPIView):
     
     
     def post(self, request, *args, **kwargs):
-        
-    
-        data = request.data
-        serializer = LeactureSerializer(data= data)
-   
-        if serializer.is_valid():
-            serializer.save()
             
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        data = request.data
+        user =  request.user
+        course_id = data.get('course')
+        course = Course.objects.get(id=course_id)
+    
+        if course.instructor.user == user:
+            serializer = LeactureSerializer(data= data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response("you are not the owner of this course", status=status.HTTP_400_BAD_REQUEST)
+            
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
  
@@ -432,6 +446,7 @@ class mostRatedCourses(GenericAPIView):
     
     def get(self, request, *args, **kwargs):
         courses_with_avg_rating = Course.objects.annotate(avg_rating=Avg('rating__rating')).order_by('-avg_rating')
+      
         
         courses = Course.objects.all()
         for course in courses:
