@@ -42,13 +42,19 @@ class CourseCreateView(GenericAPIView):
             
             instructor_obj = Instructor.objects.filter(user=current_user).exists()
             if instructor_obj:
+                
                 instructor_obj = Instructor.objects.filter(user=current_user).first()
+                
+                # data['instructor'] = InstructorSerializer(instructor_obj,many=False).data
                 data['instructor'] = instructor_obj.id
+                
+                
             
-                # data['category'] = 'Ai'  # in front end i will show then all category and pass here category id only
+                # data['category'] = 'Ai'  # in front end it will show then all category and pass here category id only
                 serializer = CourseSerializer(data=data)      
                 if serializer.is_valid():
                     serializer.save()
+                    
                     return Response(serializer.data, status=status.HTTP_200_OK)
         
         else: 
@@ -69,6 +75,7 @@ class CourseCreateView(GenericAPIView):
                 
                 courses =  Course.objects.filter(instructor=instructor)
                 serializer = CourseSerializer(courses, many=True)
+                # print(serializer.data)
             else:
                 return Response("You are not a instructor")
             
@@ -78,7 +85,7 @@ class CourseCreateView(GenericAPIView):
         if not courses:
             
             return Response("no courses release for this user")
-            
+              
         return Response(serializer.data,status=status.HTTP_201_CREATED)
     
     
@@ -309,6 +316,15 @@ class AllCourses(GenericAPIView):
                     )
         
         serializer = CourseSerializer(courses, many=True)
+        
+            
+        
+        print(serializer)
+            
+        
+            
+            
+        # print(serializer.data)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
     
