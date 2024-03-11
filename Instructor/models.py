@@ -89,8 +89,8 @@ class RatingCourse(models.Model):
     
     
 class EnrolledCourses(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
-    courses = models.ManyToManyField(Course, null=True , blank=True)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
+    courses = models.ManyToManyField(Course, blank=True)
     
     def __str__(self):
         return self.user.first_name

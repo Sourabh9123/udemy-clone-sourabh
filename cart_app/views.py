@@ -47,8 +47,8 @@ class PaymentSuccess(GenericAPIView):
             courses = data.get("course_id")
             no_of_courses = len(courses)
             user = request.user
-        
-            
+    
+            enrolled_courses, created = EnrolledCourses.objects.get_or_create(user=user)  # adding coureses to user course
             for i in range(0,no_of_courses):
                 new_data =  {
                     'payment_id': data.get("payment_id"), 'order_id': data.get("order_id"),
@@ -60,19 +60,21 @@ class PaymentSuccess(GenericAPIView):
                 
                 serializer  =  PaymentSerializer(data=new_data)
                 if serializer.is_valid():
-                   
                     serializer.save()
-                 
                 response_data = {
                     **serializer.data,
                     "type" : "success",
                 }
-               
-            return Response(response_data, status=status.HTTP_200_OK)
-            # if "course_id" in data:
+            
                 
-        
-        
+                course_instance = Course.objects.get(id=courses[i]) 
+                enrolled_courses.courses.add(course_instance)
+            
+            enrolled_courses.save() 
+            
+            print("------------------------",user.email)
+            return Response(response_data, status=status.HTTP_200_OK)
+            
         return Response("something went wrong ", status=status.HTTP_400_BAD_REQUEST)
     
 
@@ -252,17 +254,15 @@ class PurchaseCourseView(GenericAPIView):
                         "first_name" : first_name, "last_name" : last_name
                     }
                     
+                  
                     
                     return Response(response_data, status=status.HTTP_200_OK)
 
                     # return Response({'order_id': order['id'], 'amount': order_amount, "course_id" :course_id}, status=status.HTTP_200_OK)
 
+                
                     
-                    
-                    
-                # here will come payment logic
-                    
-                    return Response("this is a error", status=status.HTTP_400_BAD_REQUEST)
+                return Response("no items in cart please add first", status=status.HTTP_400_BAD_REQUEST)
                         
                     
                     

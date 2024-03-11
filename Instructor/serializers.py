@@ -14,16 +14,6 @@ class LeactureSerializer(ModelSerializer):
         
 
 
-class CourseSerializer(ModelSerializer):
-    leactures = LeactureSerializer(many=True, read_only=True)
- 
-    class Meta:
-        model = Course
-        fields = ('title', 'id', 'leactures','instructor','price','category','description','learner','tags',)
-    
- 
-        
-
 class InstructorSerializer(ModelSerializer):
     class Meta:
         
@@ -31,6 +21,17 @@ class InstructorSerializer(ModelSerializer):
         fields = '__all__'
         
         
+
+class CourseSerializer(ModelSerializer):
+    leactures = LeactureSerializer(many=True, read_only=True)
+    instructor = InstructorSerializer(read_only=True)
+    class Meta:
+        model = Course
+        fields = ('title', 'id', 'leactures','instructor','price','category','description','learner','tags',)
+    
+ 
+        
+
 
 class CategorySerializer(ModelSerializer):
     class Meta:

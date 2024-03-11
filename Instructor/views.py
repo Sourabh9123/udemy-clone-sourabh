@@ -271,6 +271,7 @@ class LectureView(GenericAPIView):
 
 class AllCourses(GenericAPIView):
     serializer_class = CourseSerializer
+    queryset = Course.objects.all()
     # permission_classes = [IsAuthenticated]
         
     def get(self, request, *args, **kwargs):
