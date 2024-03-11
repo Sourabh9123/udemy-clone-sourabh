@@ -3,6 +3,7 @@ import uuid
 from accounts_user.models import User
 from django.contrib.auth import get_user_model
 from students.models import Learner
+# from cart_app.models import Payment
 
 User = get_user_model() 
 
@@ -36,6 +37,7 @@ class Course(models.Model):
     description = models.TextField(null=True, blank=True)
     learner = models.ManyToManyField(Learner, related_name='enrolled_courses', blank=True)
     tags = models.CharField(max_length = 300, null=True, blank=True)
+    # payment = models.ForeignKey(Payment, on_delete=models.CASCADE, related_name='courses', null=True, blank=True)
     
     
 
@@ -85,5 +87,13 @@ class RatingCourse(models.Model):
     def __str__(self):
         return f"{self.user.first_name} 'rated' {self.course.title} 'this course :'- {self.rating}"
     
+    
+class EnrolledCourses(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    courses = models.ManyToManyField(Course, null=True , blank=True)
+    
+    def __str__(self):
+        return self.user.first_name
+        
     
     

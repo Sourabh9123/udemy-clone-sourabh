@@ -252,4 +252,17 @@ class TuitorSignUpView(generics.GenericAPIView):
         
         return Response({"error":serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         
+    
+    
+class GetUserName(generics.GenericAPIView):
+    
+    permission_classes = [IsAuthenticated]
+    def get(self,request, *args, **kwargs):
+        
+        user = request.user
+        
+        serializer = UserSerializer(user)
+        
+        return Response({"user": serializer.data}, status=status.HTTP_200_OK)
+        
         

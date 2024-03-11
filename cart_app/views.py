@@ -1,10 +1,10 @@
 from django.shortcuts import render
 from rest_framework.generics import GenericAPIView
-from cart_app.serializers import CartSerializer, CartItemSerializer
+from cart_app.serializers import CartSerializer, CartItemSerializer, PaymentSerializer
 from rest_framework.permissions import IsAuthenticated
 from students.models import Learner
 from Instructor.models import Course
-from cart_app.models import Cart, CartItem
+from cart_app.models import Cart, CartItem, Payment
 from rest_framework import  status
 from rest_framework.response import  Response
 from django.shortcuts import get_object_or_404
@@ -14,6 +14,12 @@ from django.http import JsonResponse
 from razorpay import Client
 import razorpay
 from django.conf import settings
+from accounts_user.models import  User
+from django.shortcuts import get_object_or_404
+from django.contrib.auth import get_user_model
+from Instructor.models import EnrolledCourses
+
+User  = get_user_model()
 
 
 
@@ -23,6 +29,55 @@ from django.conf import settings
 PUBLIC_KEY = "rzp_test_DqyEDw9vF6Y4kA",
 
 SECRET_KEY ="uibpbafCZAypJUX226PdWxBs"
+
+
+
+
+
+
+
+
+class PaymentSuccess(GenericAPIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request, *args, **kwargs):
+        with transaction.atomic():
+           
+            data = request.data
+      
+            courses = data.get("course_id")
+            no_of_courses = len(courses)
+            user = request.user
+        
+            
+            for i in range(0,no_of_courses):
+                new_data =  {
+                    'payment_id': data.get("payment_id"), 'order_id': data.get("order_id"),
+                    'signature':  data.get("signature"), 
+                    'amount': data.get("amount"), 'course_id': courses[i],
+                    "user" : user.id     ,
+                    
+                }
+                
+                serializer  =  PaymentSerializer(data=new_data)
+                if serializer.is_valid():
+                   
+                    serializer.save()
+                 
+                response_data = {
+                    **serializer.data,
+                    "type" : "success",
+                }
+               
+            return Response(response_data, status=status.HTTP_200_OK)
+            # if "course_id" in data:
+                
+        
+        
+        return Response("something went wrong ", status=status.HTTP_400_BAD_REQUEST)
+    
+
+
+
 
 
 
@@ -149,22 +204,29 @@ class PurchaseCourseView(GenericAPIView):
     
     def post(self, request, *args, **kwargs):
         
-        
+        print(request.data)
         with transaction.atomic():
-        
+            
+            
+            
             data = request.data
             user =  request.user
-            learner = Learner.objects.get(user=user)
+           
+            # learner = Learner.objects.get(user=user)
+            learner = get_object_or_404(Learner, user=user)
+            
             if learner:
-                cart = Cart.objects.get(learner=learner)
-                print("cart------------------------")
+                cart, created = Cart.objects.get_or_create(learner=learner)
+                
+                course_id = []
                 if cart:
                     cartitems = cart.items.all()
                     to_be_pay = 0
                     for i in cartitems:
                         to_be_pay += i.course.price
+                        course_id.append(i.course.id)
                         
-                                        
+                                  
                     PUBLIC_KEY = "rzp_test_DqyEDw9vF6Y4kA",
 
                     SECRET_KEY ="uibpbafCZAypJUX226PdWxBs"
@@ -180,9 +242,20 @@ class PurchaseCourseView(GenericAPIView):
                     # You may want to save the order ID in your database for reference
                     cart.order_id = order['id']
                     cart.save()
-                    print("yes------------------------------------------------")
+                    
                     # Return the order details to the client
-                    return Response({'order_id': order['id'], 'amount': order_amount}, status=status.HTTP_200_OK)
+                    first_name = user.first_name
+                    last_name = user.last_name
+                    
+                    response_data = {
+                        'order_id': order['id'], 'amount': order_amount, "course_id" :course_id,
+                        "first_name" : first_name, "last_name" : last_name
+                    }
+                    
+                    
+                    return Response(response_data, status=status.HTTP_200_OK)
+
+                    # return Response({'order_id': order['id'], 'amount': order_amount, "course_id" :course_id}, status=status.HTTP_200_OK)
 
                     
                     

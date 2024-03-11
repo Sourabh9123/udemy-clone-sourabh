@@ -1,5 +1,5 @@
 from django.contrib import admin
-from Instructor.models import Course, Instructor, Category,Leacture , RatingCourse
+from Instructor.models import Course, Instructor, Category,Leacture , RatingCourse, EnrolledCourses
 
 
 
@@ -40,3 +40,7 @@ class RatingCourseAdmin(admin.ModelAdmin):
     
     
 admin.site.register(RatingCourse, RatingCourseAdmin)
+
+
+
+admin.site.register(EnrolledCourses)

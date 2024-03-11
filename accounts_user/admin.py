@@ -18,6 +18,7 @@ class UserAdmin(BaseUserAdmin):
             'groups', 
             'user_permissions',
         )}),
+        ('Custom Fields', {'fields': ('verified_instructor',)}),
     )
     
     add_fieldsets = (

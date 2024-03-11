@@ -1,5 +1,5 @@
 from rest_framework.serializers import ModelSerializer
-from cart_app.models import Cart, CartItem
+from cart_app.models import Cart, CartItem, Payment
 from rest_framework import  serializers
 from Instructor.serializers import  CourseSerializer
 
@@ -36,7 +36,10 @@ class CartSerializer(ModelSerializer):
 
                 
         
-        
+class PaymentSerializer(ModelSerializer):
+    class Meta:
+        model = Payment
+        fields = "__all__"
             
             
         
